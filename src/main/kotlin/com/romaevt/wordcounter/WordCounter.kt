@@ -11,7 +11,7 @@ import org.commonmark.parser.Parser
 import org.commonmark.internal.util.Escaping
 import java.util.regex.Pattern
 
-enum class DocumentFormat { PLAIN_TEXT, MARKDOWN, MDX }
+enum class DocumentFormat { PLAIN_TEXT, MARKDOWN, MDX, ASCIIDOC }
 
 data class TextCounts(
     val words: Int,
@@ -68,6 +68,7 @@ object WordCounter {
     internal fun parse(source: CharSequence, format: DocumentFormat): ParsedDocument {
         if (format == DocumentFormat.PLAIN_TEXT) return ParsedDocument.Plain(source)
         val normalized = MappedText.normalize(source.toString())
+        if (format == DocumentFormat.ASCIIDOC) return ParsedDocument.Markdown(AsciiDocCleaner.clean(normalized))
         val body = normalized.slice(frontmatterEnd(normalized.text))
         val parsed = parser.parse(body.text)
         val cleaned = if (format == DocumentFormat.MARKDOWN && '<' !in body.text) body else {
